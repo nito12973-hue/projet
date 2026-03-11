@@ -67,4 +67,23 @@ describe('LoginPage', () => {
       });
     });
   });
+
+  it('keeps the page stable when signIn rejects', async () => {
+    const user = userEvent.setup();
+    mocks.auth.signIn.mockRejectedValueOnce(new Error('Compte en attente de validation administrateur.'));
+    renderPage('fr');
+
+    await user.type(screen.getByPlaceholderText('Email'), 'mariama@example.com');
+    await user.type(screen.getByPlaceholderText('Mot de passe'), 'secret123');
+    await user.click(screen.getByRole('button', { name: 'Se connecter' }));
+
+    await waitFor(() => {
+      expect(mocks.auth.signIn).toHaveBeenCalledWith({
+        email: 'mariama@example.com',
+        password: 'secret123'
+      });
+    });
+
+    expect(screen.getByText('Connexion')).toBeInTheDocument();
+  });
 });

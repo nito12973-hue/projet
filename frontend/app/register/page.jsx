@@ -12,7 +12,11 @@ export default function RegisterPage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    await signUp(form);
+    try {
+      await signUp(form);
+    } catch {
+      // L'erreur est déjà gérée dans AuthContext via un toast.
+    }
   };
 
   return (

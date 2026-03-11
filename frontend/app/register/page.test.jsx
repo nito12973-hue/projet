@@ -67,4 +67,25 @@ describe('RegisterPage', () => {
       });
     });
   });
+
+  it('keeps the page stable when signUp rejects', async () => {
+    const user = userEvent.setup();
+    mocks.auth.signUp.mockRejectedValueOnce(new Error('Compte en attente de validation administrateur.'));
+    renderPage('fr');
+
+    await user.type(screen.getByPlaceholderText('Nom complet'), 'Moussa Fall');
+    await user.type(screen.getByPlaceholderText('Email'), 'moussa@example.com');
+    await user.type(screen.getByPlaceholderText('Mot de passe'), 'secret123');
+    await user.click(screen.getByRole('button', { name: 'Créer mon compte' }));
+
+    await waitFor(() => {
+      expect(mocks.auth.signUp).toHaveBeenCalledWith({
+        name: 'Moussa Fall',
+        email: 'moussa@example.com',
+        password: 'secret123'
+      });
+    });
+
+    expect(screen.getByText('Créer un compte')).toBeInTheDocument();
+  });
 });
