@@ -20,14 +20,11 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const createSecurityRouter = require('./routes/securityRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const { errorHandler, notFound } = require('./middleware/errorMiddleware');
+const { getCookieOptions } = require('./utils/token');
 
 const app = express();
 const csrfProtection = csurf({
-  cookie: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax'
-  }
+  cookie: getCookieOptions()
 });
 
 app.use(helmet());

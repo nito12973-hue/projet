@@ -6,7 +6,7 @@ const PORT = process.env.PORT || 5000;
 async function startServer() {
   await connectDB();
   app.listen(PORT, () => {
-    console.log(`API VentePro démarrée sur le port ${PORT}`);
+    console.log(`API SunuMarket démarrée sur le port ${PORT}`);
   });
 }
 

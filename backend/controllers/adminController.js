@@ -53,7 +53,11 @@ const getAllOrders = asyncHandler(async (req, res) => {
       totalPrice: order.totalPrice,
       status: order.status,
       createdAt: order.createdAt,
-      items: order.products.map((item) => item.name)
+      items: order.products.map((item) => item.name),
+      phone: order.phone,
+      deliveryCity: order.deliveryCity,
+      deliveryAddress: order.deliveryAddress,
+      paymentMethod: order.paymentMethod
     }))
   });
 });

@@ -9,6 +9,9 @@ async function refreshProductRating(productId) {
 }
 
 const createReview = asyncHandler(async (req, res) => {
+  const existingReview = await Review.findOne({ user: req.user._id, product: req.params.productId });
+  if (existingReview) return res.status(400).json({ message: 'Tu as déjà publié un avis pour ce produit.' });
+
   const review = await Review.create({
     user: req.user._id,
     product: req.params.productId,
@@ -17,6 +20,7 @@ const createReview = asyncHandler(async (req, res) => {
   });
 
   await refreshProductRating(req.params.productId);
+  await review.populate('user', 'name');
   res.status(201).json({ message: 'Avis ajouté.', review });
 });
 

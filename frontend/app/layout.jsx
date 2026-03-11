@@ -1,17 +1,21 @@
 import './globals.css';
 import Providers from '@/components/providers';
+import { getMessages } from '@/lib/i18n';
+import { getCurrentLocale } from '@/lib/server-locale';
 import StoreShell from '@/layouts/StoreShell';
 
-export const metadata = {
-  title: 'VentePro | E-commerce moderne',
-  description: 'Application e-commerce professionnelle avec Next.js, Express, MongoDB Atlas et design premium.'
-};
+export function generateMetadata() {
+  const locale = getCurrentLocale();
+  return getMessages(locale).metadata;
+}
 
 export default function RootLayout({ children }) {
+  const locale = getCurrentLocale();
+
   return (
-    <html lang="fr" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body>
-        <Providers>
+        <Providers initialLocale={locale}>
           <StoreShell>{children}</StoreShell>
         </Providers>
       </body>

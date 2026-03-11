@@ -12,7 +12,15 @@ const orderSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   products: [orderProductSchema],
   totalPrice: { type: Number, required: true, min: 0 },
-  status: { type: String, enum: ['pending', 'paid', 'processing', 'shipped', 'cancelled'], default: 'pending' }
+  status: { type: String, enum: ['pending', 'paid', 'processing', 'shipped', 'cancelled'], default: 'pending' },
+  phone: { type: String, required: true, trim: true },
+  deliveryCity: { type: String, required: true, trim: true },
+  deliveryAddress: { type: String, required: true, trim: true },
+  paymentMethod: {
+    type: String,
+    enum: ['cash_on_delivery', 'wave', 'orange_money', 'free_money'],
+    default: 'cash_on_delivery'
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Order', orderSchema);

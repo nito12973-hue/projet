@@ -10,7 +10,7 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder: 'ventepro-products',
+    folder: 'sunumarket-products',
     allowed_formats: ['jpg', 'jpeg', 'png', 'webp']
   }
 });

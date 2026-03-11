@@ -1,6 +1,6 @@
-# VentePro - Plateforme E-commerce moderne
+# SunuMarket - Plateforme E-commerce moderne pour le Sénégal
 
-VentePro est une base professionnelle complète pour une application web e-commerce moderne avec :
+SunuMarket est une base professionnelle complète pour une application web e-commerce moderne adaptée au Sénégal et à l'Afrique de l’Ouest, avec :
 
 - **Frontend**: Next.js + React + Tailwind CSS
 - **Backend**: Node.js + Express.js
@@ -153,7 +153,7 @@ SMTP_HOST=...
 SMTP_PORT=587
 SMTP_USER=...
 SMTP_PASS=...
-EMAIL_FROM=VentePro <no-reply@ventepro.com>
+EMAIL_FROM=SunuMarket <no-reply@sunumarket.sn>
 CLOUDINARY_CLOUD_NAME=...
 CLOUDINARY_API_KEY=...
 CLOUDINARY_API_SECRET=...
@@ -244,8 +244,9 @@ CLOUDINARY_API_SECRET=...
 4. Ajouter la variable :
    - `NEXT_PUBLIC_API_URL=https://ton-backend.onrender.com/api`
 5. Déployer
-6. Vercel fournit un lien public, par exemple :
-   - `https://ventepro.vercel.app`
+6. Noter l’URL publique du frontend, car elle devra être reportée dans `CLIENT_URL` côté backend
+7. Vercel fournit un lien public, par exemple :
+   - `https://sunumarket.vercel.app`
 
 ## Backend sur Render
 
@@ -265,10 +266,24 @@ npm install
 npm start
 ```
 
-7. Ajouter les variables d’environnement du backend
+7. Ajouter les variables d’environnement du backend, au minimum :
+   - `NODE_ENV=production`
+   - `MONGODB_URI=...`
+   - `CLIENT_URL=https://ton-frontend.vercel.app`
+   - `JWT_SECRET=...`
+   - `JWT_EXPIRES_IN=7d`
+   - `SMTP_HOST=...`
+   - `SMTP_PORT=587`
+   - `SMTP_USER=...`
+   - `SMTP_PASS=...`
+   - `EMAIL_FROM=SunuMarket <no-reply@sunumarket.sn>`
+   - `CLOUDINARY_CLOUD_NAME=...`
+   - `CLOUDINARY_API_KEY=...`
+   - `CLOUDINARY_API_SECRET=...`
 8. Déployer
-9. Render fournit une URL publique, par exemple :
-   - `https://ventepro-api.onrender.com`
+9. Vérifier l’API sur `https://ton-backend.onrender.com/api/health`
+10. Render fournit une URL publique, par exemple :
+   - `https://sunumarket-api.onrender.com`
 
 ## MongoDB Atlas
 
@@ -323,17 +338,18 @@ npm run dev:frontend
 npm run dev:backend
 npm run build:frontend
 npm run lint:frontend
+npm --workspace frontend run test:run
 ```
 
 ---
 
 ## 11. Remarque importante
 
-Dans cet environnement de travail, **Node.js n'était pas installé**, donc les dépendances n'ont pas pu être réellement téléchargées et les tests n'ont pas pu être exécutés ici.
+Le projet inclut maintenant une suite de tests frontend avec **Vitest + Testing Library** pour les parcours publics et admin principaux.
 
-Le code du projet, la structure, l'architecture et la documentation sont en place. Dès que Node.js est installé sur ta machine, tu pourras :
+Avant mise en ligne, la vérification minimale recommandée est :
 
-1. lancer `npm install`
-2. démarrer le frontend et le backend
-3. connecter MongoDB Atlas, Cloudinary et SMTP
-4. déployer publiquement sur Vercel + Render
+1. lancer `npm --workspace frontend run test:run`
+2. vérifier `frontend/.env.local` et `backend/.env`
+3. déployer d’abord le backend, puis reporter son URL dans `NEXT_PUBLIC_API_URL`
+4. déployer ensuite le frontend, puis reporter son URL publique dans `CLIENT_URL`

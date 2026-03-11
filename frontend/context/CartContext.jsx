@@ -2,10 +2,12 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { useLanguage } from '@/context/LanguageContext';
 
 const CartContext = createContext(null);
 
 export function CartProvider({ children }) {
+  const { messages } = useLanguage();
   const [items, setItems] = useState([]);
 
   useEffect(() => {
@@ -27,7 +29,7 @@ export function CartProvider({ children }) {
       }
       return [...current, { ...product, quantity: 1 }];
     });
-    toast.success(`${product.name} ajouté au panier.`);
+    toast.success(`${product.name} ${messages.cart.addedSuffix}`);
   };
 
   const removeFromCart = (productId) => setItems((current) => current.filter((item) => item._id !== productId));

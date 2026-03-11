@@ -3,7 +3,7 @@ const User = require('../models/User');
 const asyncHandler = require('../utils/asyncHandler');
 const { getApprovalTemplate, getResetTemplate, getVerificationTemplate } = require('../utils/emailTemplates');
 const sendEmail = require('../utils/sendEmail');
-const { setAuthCookie, signToken } = require('../utils/token');
+const { getCookieOptions, setAuthCookie, signToken } = require('../utils/token');
 
 const buildUserResponse = (user) => ({
   _id: user._id,
@@ -58,7 +58,7 @@ const login = asyncHandler(async (req, res) => {
 });
 
 const logout = asyncHandler(async (req, res) => {
-  res.clearCookie('token');
+  res.clearCookie('token', getCookieOptions());
   res.json({ message: 'Déconnexion réussie.' });
 });
 

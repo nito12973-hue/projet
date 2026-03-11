@@ -2,8 +2,23 @@ const Order = require('../models/Order');
 const Product = require('../models/Product');
 const asyncHandler = require('../utils/asyncHandler');
 
+function formatOrder(order, customer) {
+  return {
+    _id: order._id,
+    customer,
+    totalPrice: order.totalPrice,
+    status: order.status,
+    createdAt: order.createdAt,
+    items: order.products.map((item) => item.name),
+    phone: order.phone,
+    deliveryCity: order.deliveryCity,
+    deliveryAddress: order.deliveryAddress,
+    paymentMethod: order.paymentMethod
+  };
+}
+
 const createOrder = asyncHandler(async (req, res) => {
-  const { products } = req.body;
+  const { products, phone, deliveryCity, deliveryAddress, paymentMethod } = req.body;
   if (!products?.length) return res.status(400).json({ message: 'Le panier est vide.' });
 
   const enrichedProducts = await Promise.all(products.map(async (item) => {
@@ -15,14 +30,23 @@ const createOrder = asyncHandler(async (req, res) => {
   }));
 
   const totalPrice = enrichedProducts.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const order = await Order.create({ user: req.user._id, products: enrichedProducts, totalPrice, status: 'pending' });
+  const order = await Order.create({
+    user: req.user._id,
+    products: enrichedProducts,
+    totalPrice,
+    status: 'pending',
+    phone,
+    deliveryCity,
+    deliveryAddress,
+    paymentMethod
+  });
 
-  res.status(201).json({ message: 'Commande créée.', order });
+  res.status(201).json({ message: 'Commande créée.', order: formatOrder(order, req.user.name) });
 });
 
 const getMyOrders = asyncHandler(async (req, res) => {
   const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
-  res.json({ orders });
+  res.json({ orders: orders.map((order) => formatOrder(order, req.user.name)) });
 });
 
 const getOrderById = asyncHandler(async (req, res) => {

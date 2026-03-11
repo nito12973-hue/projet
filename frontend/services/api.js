@@ -5,7 +5,8 @@ let csrfTokenCache = null;
 
 async function ensureCsrfToken() {
   if (csrfTokenCache) return csrfTokenCache;
-  const response = await fetch(`${API_URL}/security/csrf-token`, { credentials: 'include' });
+  const response = await fetch(`${API_URL}/security/csrf-token`, { credentials: 'include', cache: 'no-store' });
+  if (!response.ok) throw new Error('Impossible de sécuriser la requête.');
   const data = await response.json();
   csrfTokenCache = data.csrfToken;
   return csrfTokenCache;
@@ -24,6 +25,7 @@ async function fetchJson(path, options = {}) {
 
   const response = await fetch(`${API_URL}${path}`, {
     credentials: 'include',
+    cache: 'no-store',
     headers,
     ...options
   });
@@ -45,12 +47,29 @@ export async function getProducts() {
   }
 }
 
+export async function getCurrentUser() {
+  try {
+    const data = await fetchJson('/auth/me');
+    return data.user || null;
+  } catch {
+    return null;
+  }
+}
+
 export async function getProductById(id) {
+  const data = await getProductDetails(id);
+  return data.product;
+}
+
+export async function getProductDetails(id) {
   try {
     const data = await fetchJson(`/products/${id}`);
-    return data.product;
+    return { product: data.product, reviews: data.reviews || [] };
   } catch {
-    return demoProducts.find((product) => product._id === id) || demoProducts[0];
+    return {
+      product: demoProducts.find((product) => product._id === id) || demoProducts[0],
+      reviews: []
+    };
   }
 }
 
@@ -61,6 +80,42 @@ export async function getCategories() {
   } catch {
     return demoCategories.map((name) => ({ name, slug: name.toLowerCase() }));
   }
+}
+
+export async function createCategory(payload) {
+  return fetchJson('/categories', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export async function uploadProductImage(file) {
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const response = await fetch(`${API_URL}/upload/image`, {
+    method: 'POST',
+    credentials: 'include',
+    cache: 'no-store',
+    headers: { 'x-csrf-token': await ensureCsrfToken() },
+    body: formData
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Téléversement impossible.' }));
+    throw new Error(error.message || 'Téléversement impossible.');
+  }
+
+  return response.json();
+}
+
+export async function createProduct(payload) {
+  return fetchJson('/products', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export async function updateProduct(productId, payload) {
+  return fetchJson(`/products/${productId}`, { method: 'PUT', body: JSON.stringify(payload) });
+}
+
+export async function deleteProduct(productId) {
+  return fetchJson(`/products/${productId}`, { method: 'DELETE' });
 }
 
 export async function getDashboardStats() {
@@ -89,6 +144,13 @@ export async function getUsers() {
   }
 }
 
+export async function reviewUser(userId, approvalStatus) {
+  return fetchJson(`/admin/users/${userId}/review`, {
+    method: 'PATCH',
+    body: JSON.stringify({ approvalStatus })
+  });
+}
+
 export async function registerUser(payload) {
   return fetchJson('/auth/register', { method: 'POST', body: JSON.stringify(payload) });
 }
@@ -99,6 +161,10 @@ export async function loginUser(payload) {
 
 export async function logoutUser() {
   return fetchJson('/auth/logout', { method: 'POST' });
+}
+
+export async function updateProfile(payload) {
+  return fetchJson('/users/profile', { method: 'PUT', body: JSON.stringify(payload) });
 }
 
 export async function verifyEmail(token) {
@@ -120,5 +186,26 @@ export async function getMyOrders() {
   } catch {
     return demoOrders;
   }
+}
+
+export async function createOrder(payload) {
+  return fetchJson('/orders', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export async function createProductReview(productId, payload) {
+  return fetchJson(`/products/${productId}/reviews`, { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export async function getFavorites() {
+  try {
+    const data = await fetchJson('/users/favorites');
+    return data.favorites || [];
+  } catch {
+    return [];
+  }
+}
+
+export async function toggleFavorite(productId) {
+  return fetchJson(`/users/favorites/${productId}`, { method: 'POST' });
 }
 

@@ -2,8 +2,12 @@ const Product = require('../models/Product');
 const User = require('../models/User');
 const asyncHandler = require('../utils/asyncHandler');
 
+const favoritePopulate = { path: 'favorites', populate: { path: 'category' } };
+
 const getProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id).populate('favorites');
+  const user = await User.findById(req.user._id)
+    .select('-password -verificationToken -resetPasswordToken -resetPasswordExpires')
+    .populate(favoritePopulate);
   res.json({ user });
 });
 
@@ -28,7 +32,7 @@ const toggleFavorite = asyncHandler(async (req, res) => {
 });
 
 const getFavorites = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id).populate('favorites');
+  const user = await User.findById(req.user._id).populate(favoritePopulate);
   res.json({ favorites: user.favorites });
 });
 

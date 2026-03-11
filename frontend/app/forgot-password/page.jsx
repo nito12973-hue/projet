@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useLanguage } from '@/context/LanguageContext';
 import { requestPasswordReset } from '@/services/api';
 
 export default function ForgotPasswordPage() {
+  const { messages } = useLanguage();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -12,8 +14,8 @@ export default function ForgotPasswordPage() {
     event.preventDefault();
     setLoading(true);
     try {
-      const data = await requestPasswordReset({ email });
-      toast.success(data.message || 'Email de réinitialisation envoyé.');
+      await requestPasswordReset({ email });
+      toast.success(messages.forgotPassword.success);
     } catch (error) {
       toast.error(error.message);
     } finally {
@@ -24,11 +26,12 @@ export default function ForgotPasswordPage() {
   return (
     <section className="section-spacing">
       <div className="container-page max-w-xl">
-        <div className="glass-panel p-8">
-          <h1 className="text-3xl font-black">Mot de passe oublié</h1>
+        <div className="glass-panel p-5 sm:p-8">
+          <h1 className="text-3xl font-black sm:text-4xl">{messages.forgotPassword.title}</h1>
+          <p className="mt-2 text-sm text-slate-500 sm:text-base">{messages.forgotPassword.description}</p>
           <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-            <input type="email" required placeholder="Ton email" className="input-field" value={email} onChange={(e) => setEmail(e.target.value)} />
-            <button disabled={loading} className="btn-primary w-full">{loading ? 'Envoi...' : 'Envoyer le lien'}</button>
+            <input type="email" required placeholder={messages.forgotPassword.email} className="input-field" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <button disabled={loading} className="btn-primary w-full">{loading ? messages.forgotPassword.loading : messages.forgotPassword.submit}</button>
           </form>
         </div>
       </div>

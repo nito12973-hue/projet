@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useLanguage } from '@/context/LanguageContext';
 import { verifyEmail } from '@/services/api';
 
 export default function VerifyEmailPage({ params }) {
-  const [status, setStatus] = useState({ loading: true, message: 'Vérification en cours...' });
+  const { messages } = useLanguage();
+  const [status, setStatus] = useState({ loading: true, message: '' });
 
   useEffect(() => {
     let isMounted = true;
@@ -19,10 +21,10 @@ export default function VerifyEmailPage({ params }) {
   return (
     <section className="section-spacing">
       <div className="container-page max-w-xl">
-        <div className="glass-panel p-8 text-center">
-          <h1 className="text-3xl font-black">Confirmation d’email</h1>
-          <p className="mt-4 text-slate-500">{status.message}</p>
-          {!status.loading && <p className="mt-3 text-sm text-brand-500">Prochaine étape : validation du compte par l’administrateur.</p>}
+        <div className="glass-panel p-5 text-center sm:p-8">
+          <h1 className="text-3xl font-black sm:text-4xl">{messages.verifyEmail.title}</h1>
+          <p className="mt-4 text-slate-500">{status.loading ? messages.verifyEmail.loading : status.message}</p>
+          {!status.loading && <p className="mt-3 text-sm text-brand-500">{messages.verifyEmail.nextStep}</p>}
         </div>
       </div>
     </section>

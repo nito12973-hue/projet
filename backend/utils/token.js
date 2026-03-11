@@ -6,13 +6,21 @@ function signToken(user) {
   });
 }
 
+function getCookieOptions() {
+  const isProduction = process.env.NODE_ENV === 'production';
+  return {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+    path: '/'
+  };
+}
+
 function setAuthCookie(res, token) {
   res.cookie('token', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    ...getCookieOptions(),
     maxAge: 7 * 24 * 60 * 60 * 1000
   });
 }
 
-module.exports = { signToken, setAuthCookie };
+module.exports = { signToken, setAuthCookie, getCookieOptions };
