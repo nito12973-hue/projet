@@ -1,4 +1,6 @@
 import HeroSection from '@/components/HeroSection';
+import HeroSpotlights from '@/components/HeroSpotlights';
+import FocusCarousel from '@/components/FocusCarousel';
 import ProductCard from '@/components/ProductCard';
 import SectionHeading from '@/components/SectionHeading';
 import { getMessages } from '@/lib/i18n';
@@ -15,6 +17,8 @@ export default async function HomePage() {
   return (
     <>
       <HeroSection />
+      <HeroSpotlights />
+      <FocusCarousel products={featuredProducts} />
       <section className="section-spacing pt-0">
         <div className="container-page">
           <SectionHeading

@@ -8,6 +8,7 @@ import { LanguageProvider } from '@/context/LanguageContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
 import { FavoritesProvider } from '@/context/FavoritesContext';
+import { DesignProvider } from '@/context/DesignContext';
 
 export default function Providers({ children, initialLocale }) {
   const [queryClient] = useState(() => new QueryClient());
@@ -15,6 +16,7 @@ export default function Providers({ children, initialLocale }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <LanguageProvider initialLocale={initialLocale}>
+        <DesignProvider>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <FavoritesProvider>
@@ -25,6 +27,7 @@ export default function Providers({ children, initialLocale }) {
             </FavoritesProvider>
           </AuthProvider>
         </QueryClientProvider>
+        </DesignProvider>
       </LanguageProvider>
     </ThemeProvider>
   );

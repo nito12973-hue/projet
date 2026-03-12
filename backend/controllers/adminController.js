@@ -17,7 +17,7 @@ const getDashboard = asyncHandler(async (req, res) => {
     totalUsers,
     totalProducts,
     totalOrders,
-    totalSales: salesData[0]?.totalSales || 0,
+    totalSales: salesData[0]?.totalSales ?? 0,
     recentOrders: recentOrders.map((order) => ({
       _id: order._id,
       customer: order.user?.name || 'Client',
@@ -29,23 +29,73 @@ const getDashboard = asyncHandler(async (req, res) => {
 });
 
 const getAllUsers = asyncHandler(async (req, res) => {
-  const users = await User.find().select('-password').sort({ createdAt: -1 });
-  res.json({ users });
+  const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+  const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), 100);
+  const skip = (page - 1) * limit;
+
+  const [users, total] = await Promise.all([
+    User.find()
+      .select('-password')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    User.countDocuments()
+  ]);
+
+  res.json({
+    users,
+    pagination: {
+      page,
+      limit,
+      total,
+      pages: Math.ceil(total / limit)
+    }
+  });
 });
 
 const reviewUser = asyncHandler(async (req, res) => {
+  const allowedStatuses = ['pending', 'approved', 'rejected'];
+  const { approvalStatus } = req.body;
+
+  if (!allowedStatuses.includes(approvalStatus)) {
+    return res
+      .status(400)
+      .json({ message: 'Statut invalide. Utilisez pending, approved ou rejected.' });
+  }
+
   const user = await User.findById(req.params.id);
   if (!user) return res.status(404).json({ message: 'Utilisateur introuvable.' });
 
-  user.approvalStatus = req.body.approvalStatus;
+  user.approvalStatus = approvalStatus;
   await user.save();
-  if (req.body.approvalStatus === 'approved') await sendApprovalWelcome(user);
 
-  res.json({ message: 'Statut utilisateur mis à jour.', user });
+  let emailWarning = null;
+  if (approvalStatus === 'approved') {
+    try {
+      await sendApprovalWelcome(user);
+    } catch (err) {
+      emailWarning = "L'e-mail de bienvenue n'a pas pu être envoyé, l'approbation est néanmoins enregistrée.";
+    }
+  }
+
+  res.json({ message: 'Statut utilisateur mis à jour.', user, emailWarning });
 });
 
 const getAllOrders = asyncHandler(async (req, res) => {
-  const orders = await Order.find().sort({ createdAt: -1 }).populate('user', 'name email');
+  const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+  const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), 100);
+  const skip = (page - 1) * limit;
+  const includeDetails = String(req.query.details).toLowerCase() === 'true';
+
+  const [orders, total] = await Promise.all([
+    Order.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('user', 'name email'),
+    Order.countDocuments()
+  ]);
+
   res.json({
     orders: orders.map((order) => ({
       _id: order._id,
@@ -54,11 +104,21 @@ const getAllOrders = asyncHandler(async (req, res) => {
       status: order.status,
       createdAt: order.createdAt,
       items: order.products.map((item) => item.name),
-      phone: order.phone,
-      deliveryCity: order.deliveryCity,
-      deliveryAddress: order.deliveryAddress,
-      paymentMethod: order.paymentMethod
-    }))
+      paymentMethod: order.paymentMethod,
+      ...(includeDetails
+        ? {
+            phone: order.phone,
+            deliveryCity: order.deliveryCity,
+            deliveryAddress: order.deliveryAddress
+          }
+        : {})
+    })),
+    pagination: {
+      page,
+      limit,
+      total,
+      pages: Math.ceil(total / limit)
+    }
   });
 });
 

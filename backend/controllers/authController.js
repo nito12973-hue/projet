@@ -19,14 +19,29 @@ const register = asyncHandler(async (req, res) => {
   const existing = await User.findOne({ email });
   if (existing) return res.status(400).json({ message: 'Un compte existe déjà avec cet email.' });
 
-  const verificationToken = crypto.randomBytes(24).toString('hex');
-  const user = await User.create({ name, email, password, verificationToken });
+  const userCount = await User.countDocuments();
+  const isFirstUser = userCount === 0;
 
-  const verificationLink = `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
-  await sendEmail({ to: user.email, ...getVerificationTemplate(verificationLink, user.name) });
+  const verificationToken = isFirstUser ? undefined : crypto.randomBytes(24).toString('hex');
+  const user = await User.create({
+    name,
+    email,
+    password,
+    role: isFirstUser ? 'admin' : 'user',
+    approvalStatus: isFirstUser ? 'approved' : 'pending',
+    verified: isFirstUser ? true : false,
+    verificationToken
+  });
+
+  if (!isFirstUser) {
+    const verificationLink = `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
+    await sendEmail({ to: user.email, ...getVerificationTemplate(verificationLink, user.name) });
+  }
 
   res.status(201).json({
-    message: 'Compte créé. Vérifie ton email puis attends la validation administrateur.',
+    message: isFirstUser
+      ? 'Compte administrateur créé et activé. Vous pouvez vous connecter immédiatement.'
+      : 'Compte créé. Vérifiez votre email puis attendez la validation administrateur.',
     user: buildUserResponse(user)
   });
 });
@@ -49,7 +64,9 @@ const login = asyncHandler(async (req, res) => {
     return res.status(401).json({ message: 'Identifiants invalides.' });
   }
   if (!user.verified) return res.status(403).json({ message: 'Confirme ton email avant de te connecter.' });
-  if (user.approvalStatus !== 'approved') return res.status(403).json({ message: 'Compte en attente de validation administrateur.' });
+  if (user.approvalStatus !== 'approved') {
+    return res.status(403).json({ message: 'Compte en attente de validation par un administrateur.' });
+  }
 
   const token = signToken(user);
   setAuthCookie(res, token);

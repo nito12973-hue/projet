@@ -5,7 +5,7 @@ export default function StoreShell({ children }) {
   return (
     <div className="min-h-screen">
       <Navbar />
-      <main>{children}</main>
+      <main className="safe-area pb-12 pt-4 sm:pt-6">{children}</main>
       <Footer />
     </div>
   );
