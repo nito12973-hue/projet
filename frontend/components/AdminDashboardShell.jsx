@@ -11,6 +11,8 @@ export default function AdminDashboardShell({ t, stats }) {
   const [statusFilter, setStatusFilter] = useState('all');
   const focusIcons = [Sparkles, Package, ShieldCheck];
 
+  const getStatusLabel = (status) => t?.statusFilters?.[status] ?? status;
+
   const statuses = useMemo(() => {
     const unique = new Set(stats.recentOrders.map((order) => order.status));
     return ['all', ...unique];
@@ -95,7 +97,7 @@ export default function AdminDashboardShell({ t, stats }) {
                   onClick={() => setStatusFilter(status)}
                   className={`status-chip ${statusFilter === status ? 'status-chip-active' : ''}`}
                 >
-                  {t.statusFilters?.[status] || status}
+                  {getStatusLabel(status)}
                 </button>
               ))}
             </div>

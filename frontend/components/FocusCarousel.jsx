@@ -4,12 +4,15 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { formatPrice } from '@/lib/commerce';
+import { useLanguage } from '@/context/LanguageContext';
 
 const AUTO_PLAY_DELAY = 4000;
 
 export default function FocusCarousel({ products }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const { messages } = useLanguage();
+  const { browser, focusCarousel } = messages;
   const categories = useMemo(() => {
     const set = new Set(products.map((product) => product.category?.name || 'Autres'));
     return ['all', ...Array.from(set)];
@@ -64,7 +67,7 @@ export default function FocusCarousel({ products }) {
             onClick={() => setSelectedCategory(category)}
             className={`focus-filter ${selectedCategory === category ? 'focus-filter-active' : ''}`}
           >
-            {category === 'all' ? 'Toutes les catégories' : category}
+            {category === 'all' ? browser.allCategories : category}
           </button>
         ))}
       </div>
@@ -75,7 +78,7 @@ export default function FocusCarousel({ products }) {
             href={`/product/${product._id}`}
             className={`focus-card ${index === activeIndex ? 'focus-card-active' : ''}`}
           >
-            <div className="focus-card-badge">{index === activeIndex ? 'TOP PICK' : 'À découvrir'}</div>
+            <div className="focus-card-badge">{index === activeIndex ? focusCarousel.topPick : focusCarousel.discoverBadge}</div>
             <div className="focus-card-title">{product.name}</div>
             <p className="focus-card-description">{product.description}</p>
             <div className="focus-card-meta">
